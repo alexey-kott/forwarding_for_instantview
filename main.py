@@ -32,12 +32,15 @@ def main():
     @client.on(events.NewMessage)
     def handle_msg(event):
         if event.is_channel:
+
             channel = client.get_entity(event.message.to_id)
             if channel.username in FORWARDING_CHANNELS:
                 msg_text = event.message.message
-                if not is_trash(msg_text):
+                
+                if is_trash(msg_text):
                     return
-                client.send_message(DEST_CHANNEL, msg_text)
+                
+                client.send_message(DEST_CHANNEL, msg_text, file=event.message.media)
 
     client.idle()
 
