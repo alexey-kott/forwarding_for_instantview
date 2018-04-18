@@ -2,17 +2,11 @@
 #!/usr/bin/env python3
 from telethon import TelegramClient, events
 
+from trash_filter import is_trash
 from config import TG_API_ID, TG_API_HASH, TG_APP_TITLE, PHONE, FORWARDING_CHANNELS, DEST_CHANNEL
 
 
-def is_trash(msg_text):
-    trash = ['подписыва']
-    msg_text = msg_text.lower()
-    for word in trash:
-        if msg_text.find(word) != -1:
-            return True
 
-    return False
 
 
 def main():
