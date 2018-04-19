@@ -31,8 +31,8 @@ def main():
             if channel.username in FORWARDING_CHANNELS:
                 msg_text = event.message.message
                 
-                if is_trash(msg_text):
-                    return
+                # if is_trash(msg_text):
+                #     return
                 
                 client.send_message(DEST_CHANNEL, msg_text, file=event.message.media)
 
