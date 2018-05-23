@@ -4,9 +4,14 @@ from telethon import TelegramClient, events
 
 from trash_filter import is_trash
 from config import TG_API_ID, TG_API_HASH, TG_APP_TITLE, PHONE, FORWARDING_CHANNELS, DEST_CHANNEL
+from config import SOURCE_NAMES, DEST_NAMES
 
-
-
+def get_dest(client, field, value):
+    dialogs = client.get_dialogs()
+    for dialog in dialogs:
+        if getattr(dialog, field) == value:
+#            print(dialog)
+            return dialog
 
 
 def main():
@@ -26,7 +31,12 @@ def main():
 	@client.on(events.NewMessage)
 	def handle_msg(event):
 		if event.is_channel:
-
+			for dest_name in DEST_NAMES:
+				dest_dialog = get_dest(client, "name", dest_name)
+				
+				dest_dialog.send_message(message=event.message)
+				
+			return
 			channel = client.get_entity(event.message.to_id)
 			if channel.username in FORWARDING_CHANNELS:
 				msg_text = event.message.message

@@ -3,11 +3,7 @@
 from telethon import TelegramClient, events
 
 from trash_filter import is_trash
-from config import TG_API_ID, TG_API_HASH, TG_APP_TITLE, PHONE, FORWARDING_CHANNELS, DEST_CHANNEL
-
-
-
-
+from config import TG_API_ID, TG_API_HASH, TG_APP_TITLE, PHONE, FORWARDING_DIALOGS
 
 def main():
     client = TelegramClient(PHONE.strip('+'),
@@ -23,8 +19,16 @@ def main():
         client.send_code_request(PHONE)
         client.sign_in(PHONE, input("Enter code: "))
 
+    def get_entity(id=None, alias=None, name=None):
+        for item in client.get_dialogs():
+            pass
+
     @client.on(events.NewMessage)
     def handle_msg(event):
+        for dest_type, dest_entities in FORWARDING_DIALOGS.items():
+            for dest_entity in dest_entities:
+                print(dest_entity)
+
         if event.is_channel:
 
             channel = client.get_entity(event.message.to_id)
