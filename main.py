@@ -19,13 +19,16 @@ def get_source_ids():
 	source_ids = set()
 	for source_type, identificators in SOURCE_DIALOGS.items():
 		for identificator in identificators:
-			if source_type == "names":
-				dialog = get_dialog_by_field('name', identificator)
-				source_ids.add(dialog.id)
+			try:
+				if source_type == "names":
+					dialog = get_dialog_by_field('name', identificator)
+					source_ids.add(dialog.id)
 
-			if source_type in {"aliases"}:
-				dialog = client.get_entity(identificator)
-				source_ids.add(dialog.id)
+				if source_type in {"aliases"}:
+					dialog = client.get_entity(identificator)
+					source_ids.add(dialog.id)
+			except:
+				pass
 
 	return source_ids
 					
@@ -34,13 +37,16 @@ def get_dest_ids():
 	dest_ids = set()
 	for dest_type, identificators in DEST_DIALOGS.items():
 		for identificator in identificators:
-			if dest_type == "names":
-				dialog = get_dialog_by_field('name', identificator)
-				dest_ids.add(dialog.id)
+			try:
+				if dest_type == "names":
+					dialog = get_dialog_by_field('name', identificator)
+					dest_ids.add(dialog.id)
 
-			if dest_type in {"aliases"}:
-				dialog = client.get_entity(identificator)
-				dest_ids.add(dialog.id)
+				if dest_type in {"aliases"}:
+					dialog = client.get_entity(identificator)
+					dest_ids.add(dialog.id)
+			except:
+				pass
 
 	return dest_ids
 
@@ -69,7 +75,6 @@ def main():
 
 	sources = get_source_ids()
 	destinations = get_dest_ids()
-
 
 	@client.on(events.NewMessage)
 	def handle_msg(event):
