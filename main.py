@@ -79,16 +79,17 @@ def main():
 	@client.on(events.NewMessage)
 	def handle_msg(event):
 		if event.is_channel:
-			dialog_id = event.message.to_id.channel_id
+			source_id = event.message.to_id.channel_id
 		elif event.is_private:
-			dialog_id = event.message.to_id.user_id
+			source_id = event.message.to_id.user_id
 		elif event.is_group:
-			dialog_id = event.message.to_id.group_id
+			source_id = event.message.to_id.group_id
 
-		if dialog_id in sources:
+		if source_id in sources:
 			for destination in destinations:
 				dialog = get_dialog_by_field('id', destination)
-				text = "{}\n{}".format(dialog.name, event.message.message)
+				source_dialog = get_dialog_by_field('id', source_id)
+				text = "{}\n{}".format(source_dialog.name, event.message.message)
 				dialog.send_message(message=text)
 
 
