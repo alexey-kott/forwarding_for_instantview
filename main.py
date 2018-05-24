@@ -10,7 +10,7 @@ from config import SOURCE_DIALOGS, DEST_DIALOGS
 def get_dialog_by_field(field, value):
 	global client
 	for dialog in client.get_dialogs():
-		if getattr(dialog, field) == value:
+		if getattr(dialog.entity, field) == value:
 			return dialog
 	return None
 
@@ -22,11 +22,11 @@ def get_source_ids():
 			try:
 				if source_type == "names":
 					dialog = get_dialog_by_field('name', identificator)
-					source_ids.add(dialog.id)
+					source_ids.add(dialog.entity.id)
 
 				if source_type in {"aliases"}:
 					dialog = client.get_entity(identificator)
-					source_ids.add(dialog.id)
+					source_ids.add(dialog.entity.id)
 			except:
 				pass
 
@@ -78,21 +78,19 @@ def main():
 
 	@client.on(events.NewMessage)
 	def handle_msg(event):
+		
 		if event.is_channel:
-			source_id = event.message.to_id.channel_id
+			source_id = event._chat_peer.channel_id
 		elif event.is_private:
-			source_id = event.message.to_id.user_id
+			source_id = event._chat_peer.user_id
 		elif event.is_group:
-			source_id = event.message.to_id.group_id
+			source_id = event._chat_peer.channel_id
 
-		if source_id in sources:
-			for destination in destinations:
-				dialog = get_dialog_by_field('id', destination)
-				source_dialog = get_dialog_by_field('id', source_id)
-				text = "{}\n{}".format(source_dialog.name, event.message.message)
-				dialog.send_message(message=text)
-
-
+		for destination in destinations:
+			dialog = get_dialog_by_field('id', destination)
+			source_dialog = get_dialog_by_field('id', source_id)
+			text = "{}\n{}".format(source_dialog.name, event.message.message)
+			dialog.send_message(message=text)
 	client.idle()
 
 
