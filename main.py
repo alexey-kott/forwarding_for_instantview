@@ -7,31 +7,53 @@ from config import TG_API_ID, TG_API_HASH, TG_APP_TITLE, PHONE, FORWARDING_CHANN
 from config import SOURCE_DIALOGS, DEST_DIALOGS
 
 
-def get_dialog_by_name(name):
+def get_dialog_by_field(field, value):
 	global client
 	for dialog in client.get_dialogs():
-		if dialog.name == name:
+		if getattr(dialog, field) == value:
 			return dialog
 	return None
 
-def get_source_ids(sources):
+
+def get_source_ids():
 	source_ids = set()
-	for source_type, sources in SOURCE_DIALOGS.items():
-		for source in sources:
+	for source_type, identificators in SOURCE_DIALOGS.items():
+		for identificator in identificators:
 			if source_type == "names":
-				dialog = get_dialog_by_name(source)
+				dialog = get_dialog_by_field('name', identificator)
 				source_ids.add(dialog.id)
 
 			if source_type in {"aliases"}:
-				# dialog = client.get_entity(source)
-				print(dialog)
-				# source_ids.add(dialog)
+				dialog = client.get_entity(identificator)
+				source_ids.add(dialog.id)
+
+	return source_ids
 					
+
+def get_dest_ids():
+	dest_ids = set()
+	for dest_type, identificators in DEST_DIALOGS.items():
+		for identificator in identificators:
+			if dest_type == "names":
+				dialog = get_dialog_by_field('name', identificator)
+				dest_ids.add(dialog.id)
+
+			if dest_type in {"aliases"}:
+				dialog = client.get_entity(identificator)
+				dest_ids.add(dialog.id)
+
+	return dest_ids
+
+
+def clear_chat(dialog_name): # TODO
+	# dialog = get_dialog_by_field("name", dialog_name)
+	pass
 
 
 def main():
 	global client
-	global sources
+	global sources, destinations
+
 	client = TelegramClient(PHONE.strip('+'),
 							TG_API_ID,
 							TG_API_HASH,
@@ -45,44 +67,25 @@ def main():
 		client.send_code_request(PHONE)
 		client.sign_in(PHONE, input("Enter code: "))
 
-	sources = get_source_ids(SOURCE_DIALOGS)
+	sources = get_source_ids()
+	destinations = get_dest_ids()
+
 
 	@client.on(events.NewMessage)
 	def handle_msg(event):
-		message = event.message
-		# print(event.message)
-		flag = False
-		# for source_type, sources in SOURCE_DIALOGS.items():
-		# 	for source in sources:
-		# 		if source_type == "names":
-		# 			# if get_dialog_by_name(source) is not None:
-		# 			# 	flag = True
+		if event.is_channel:
+			dialog_id = event.message.to_id.channel_id
+		elif event.is_private:
+			dialog_id = event.message.to_id.user_id
+		elif event.is_group:
+			dialog_id = event.message.to_id.group_id
 
-		# 			pass
-				# if source_type in {"aliases"}:
-				# 	if client.get_entity(source):
-				# 		flag = True
-					
-		# print(flag)
+		if dialog_id in sources:
+			for destination in destinations:
+				dialog = get_dialog_by_field('id', destination)
+				text = "{}\n{}".format(dialog.name, event.message.message)
+				dialog.send_message(message=text)
 
-				# print(message)
-				# chat.send_message(message=message)
-
-		# if event.is_channel:
-		# 	for dest_name in DEST_NAMES:
-		# 		dest_dialog = get_dest(client, "name", dest_name)
-				
-		# 		dest_dialog.send_message(message=event.message)
-				
-		# 	return
-		# 	channel = client.get_entity(event.message.to_id)
-		# 	if channel.username in FORWARDING_CHANNELS:
-		# 		msg_text = event.message.message
-				
-		# 		# if is_trash(msg_text):
-		# 		#     return
-				
-		# 		client.send_message(DEST_CHANNEL, msg_text, file=event.message.media)
 
 	client.idle()
 
