@@ -10,8 +10,8 @@ from config import SOURCE_DIALOGS, DEST_DIALOGS
 def get_dialog_by_field(field, value):
 	global client
 	for dialog in client.get_dialogs():
-		if getattr(dialog.entity, field) == value:
-			return dialog
+		if getattr(dialog.entity, field, '') == value:
+			return dialog.entity
 	return None
 
 
@@ -20,13 +20,17 @@ def get_source_ids():
 	for source_type, identificators in SOURCE_DIALOGS.items():
 		for identificator in identificators:
 			try:
+				if source_type == "titles":
+					dialog = get_dialog_by_field('title', identificator)
+					source_ids.add(dialog.id)
+
 				if source_type == "names":
 					dialog = get_dialog_by_field('name', identificator)
-					source_ids.add(dialog.entity.id)
+					source_ids.add(dialog.id)
 
 				if source_type in {"aliases"}:
 					dialog = client.get_entity(identificator)
-					source_ids.add(dialog.entity.id)
+					source_ids.add(dialog.id)
 			except:
 				pass
 
@@ -38,11 +42,15 @@ def get_dest_ids():
 	for dest_type, identificators in DEST_DIALOGS.items():
 		for identificator in identificators:
 			try:
-				if dest_type == "names":
+				if dest_type == "titles":
+					dialog = get_dialog_by_field('title', identificator)
+					dest_ids.add(dialog.id)
+
+				elif dest_type == "names":
 					dialog = get_dialog_by_field('name', identificator)
 					dest_ids.add(dialog.id)
 
-				if dest_type in {"aliases"}:
+				elif dest_type in {"aliases"}:
 					dialog = client.get_entity(identificator)
 					dest_ids.add(dialog.id)
 			except:
@@ -78,7 +86,7 @@ def main():
 
 	@client.on(events.NewMessage)
 	def handle_msg(event):
-		
+
 		if event.is_channel:
 			source_id = event._chat_peer.channel_id
 		elif event.is_private:
@@ -86,11 +94,13 @@ def main():
 		elif event.is_group:
 			source_id = event._chat_peer.channel_id
 
-		for destination in destinations:
-			dialog = get_dialog_by_field('id', destination)
-			source_dialog = get_dialog_by_field('id', source_id)
-			text = "{}\n{}".format(source_dialog.name, event.message.message)
-			dialog.send_message(message=text)
+		if source_id in sources:
+
+			for destination in destinations:
+				dialog = get_dialog_by_field('id', destination)
+				source_dialog = get_dialog_by_field('id', source_id)
+				text = "{}\n{}".format(source_dialog.title, event.message.message)
+				client.send_message(dialog, text)
 	client.idle()
 
 
