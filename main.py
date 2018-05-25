@@ -83,19 +83,19 @@ def main():
 
 	sources = get_source_ids()
 	destinations = get_dest_ids()
+	# print(sources)
+	# print(destinations)
 
 	@client.on(events.NewMessage)
 	def handle_msg(event):
-
 		if event.is_channel:
 			source_id = event._chat_peer.channel_id
 		elif event.is_private:
 			source_id = event._chat_peer.user_id
 		elif event.is_group:
 			source_id = event._chat_peer.channel_id
-
+		
 		if source_id in sources:
-
 			for destination in destinations:
 				dialog = get_dialog_by_field('id', destination)
 				source_dialog = get_dialog_by_field('id', source_id)
