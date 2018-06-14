@@ -67,7 +67,7 @@ def main():
                 entity = get_dialog_by_id(event.message.to_id.channel_id)
                 try:
                     addressee = client.get_entity(event.message.from_id)
-                    last_name = lambda name: name if not None else ''
+                    last_name = lambda name: name if None else ''
                     addressee_name = f"{addressee.first_name} {last_name(addressee.last_name)}"
                 except TypeError:
                     addressee_name = f"{entity.title}"
