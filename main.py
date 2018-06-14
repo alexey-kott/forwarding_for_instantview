@@ -58,14 +58,20 @@ def main():
 
     @client.on(events.NewMessage)
     def handle_msg(event):
+
         sender_ids = {entity.id for id, entity in event._entities.items()}
 
         for item in forwarding_schema:
             intersection = item['SOURCE'] & sender_ids
             if intersection:
-                addressee = client.get_entity(event.message.from_id)
+                try:
+                    addressee = client.get_entity(event.message.from_id)
+                    addressee_name = f"({addressee.first_name})"
+                except TypeError:
+                    addressee_name = ""
+
                 entity = get_dialog_by_id(event.message.to_id.channel_id)
-                msg_text = f"{entity.title} ({addressee.first_name} {addressee.last_name})\n {event.message.message}"
+                msg_text = f"{entity.title} {addressee_name}\n {event.message.message}"
                 for dest_id in item['DESTINATION']:
                     client.send_message(dest_id, msg_text, file=event.message.media)
 
