@@ -37,7 +37,12 @@ def search_entities(name):
             return dialog.entity.id
 
 
-def get_dialog_by_id(entity_id):
+def get_dialog(peer_entity):
+    try:
+        entity_id = peer_entity.channel_id
+    except AttributeError:
+        entity_id = peer_entity.chat_id
+
     for dialog in user_dialogs:
         if dialog.entity.id == entity_id:
             return dialog.entity
@@ -80,7 +85,7 @@ def main():
         for item in forwarding_schema:
             intersection = item['SOURCE'] & sender_ids
             if intersection:
-                entity = get_dialog_by_id(event.message.to_id.channel_id)
+                entity = get_dialog(event.message.to_id)
                 try:
                     addressee = client.get_entity(event.message.from_id)
                     last_name = lambda name: name if None else ''
