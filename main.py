@@ -50,7 +50,7 @@ def get_dialog(peer_entity):
 
 def get_message_text(addressee, msg_text, translate_schema=None):
     if translate_schema is None:
-        return f"{addressee}\n {msg_text}"
+        return f"{msg_text}"
     else:
         translate = translator.translate(msg_text,
                                          src=translate_schema.get("FROM"),
