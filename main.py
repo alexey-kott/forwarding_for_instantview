@@ -55,7 +55,7 @@ def get_message_text(addressee, msg_text, translate_schema=None):
         translate = translator.translate(msg_text,
                                          src=translate_schema.get("FROM"),
                                          dest=translate_schema.get('TO'))
-        return f"{addressee}\n {translate.text}"
+        return f"{addressee}\n {msg_text}\n\n{translate.text}"
 
 
 def main():
