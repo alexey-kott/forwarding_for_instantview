@@ -26,15 +26,15 @@ def get_forwarding_schema():
 
 
 def search_entities(name):
-    name = name.strip('@')
     for dialog in user_dialogs:
-        if dialog.name == name:
-            return dialog.entity.id
-    for dialog in user_dialogs:
-        if getattr(dialog.entity, 'username', None) == name:
-            return dialog.entity.id
-        if getattr(dialog.entity, 'title', None) == name:
-            return dialog.entity.id
+        if name.startswith('@'):
+            if getattr(dialog.entity, 'username', None) == name.strip('@'):
+                return dialog.entity.id
+        else:
+            if getattr(dialog.entity, 'title', None) == name:
+                return dialog.entity.id
+            if dialog.name == name:
+                return dialog.entity.id
 
 
 def get_dialog(peer_entity):
