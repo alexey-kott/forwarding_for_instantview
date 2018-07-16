@@ -1,3 +1,4 @@
+import asyncio
 from collections import defaultdict
 
 from telethon import TelegramClient, events
@@ -9,6 +10,10 @@ import logging
 
 logging.basicConfig(level=logging.ERROR)
 translator = Translator()
+
+client = TelegramClient(PHONE.strip('+'),
+                            TG_API_ID,
+                            TG_API_HASH)
 
 
 def get_forwarding_schema():
@@ -58,50 +63,56 @@ def get_message_text(addressee, msg_text, translate_schema=None):
         return f"{addressee}\n {msg_text}\n\n{translate.text}"
 
 
-def main():
-    global client
+
+
+
+
+async def main():
     global user_dialogs
-    client = TelegramClient(PHONE.strip('+'),
-                            TG_API_ID,
-                            TG_API_HASH,
-                            proxy=None,
-                            update_workers=4,
-                            spawn_read_thread=False)
+    global forwarding_schema
 
-    client.start()
 
-    if not client.is_user_authorized():
-        client.send_code_request(PHONE)
-        client.sign_in(PHONE, input("Enter code: "))
+    await client.start()
 
-    user_dialogs = client.get_dialogs()
+    if not await client.is_user_authorized():
+        await client.send_code_request(PHONE)
+        await client.sign_in(PHONE, input("Enter code: "))
+
+    user_dialogs = await client.get_dialogs()
     forwarding_schema = get_forwarding_schema()
 
-    @client.on(events.NewMessage)
-    def handle_msg(event):
+    await client.run_until_disconnected()
 
-        sender_ids = {entity.id for id, entity in event._entities.items()}
 
-        for item in forwarding_schema:
-            intersection = item['SOURCE'] & sender_ids
-            if intersection:
-                entity = get_dialog(event.message.to_id)
-                try:
-                    addressee = client.get_entity(event.message.from_id)
-                    last_name = lambda name: name if None else ''
-                    addressee_name = f"{addressee.first_name} {last_name(addressee.last_name)}"
-                except TypeError:
-                    addressee_name = f"{entity.title}"
 
-                msg_text = get_message_text(addressee=addressee_name,
-                                            msg_text=event.message.message,
-                                            translate_schema=item.get('TRANSLATE'))
+@client.on(events.NewMessage)
+async def handle_msg(event):
+    sender_ids = {entity.id for id, entity in event._entities.items()}
 
-                for dest_id in item['DESTINATION']:
-                    client.send_message(dest_id, msg_text, file=event.message.media)
+    for item in forwarding_schema:
+        intersection = item['SOURCE'] & sender_ids
+        if intersection:
+            entity = get_dialog(event.message.to_id)
+            try:
+                addressee = await client.get_entity(event.message.from_id)
+                last_name = lambda name: name if None else ''
+                addressee_name = f"{addressee.first_name} {last_name(addressee.last_name)}"
+            except TypeError:
+                addressee_name = f"{entity.title}"
 
-    client.idle()
+            msg_text = get_message_text(addressee=addressee_name,
+                                        msg_text=event.message.message,
+                                        translate_schema=item.get('TRANSLATE'))
+
+            for dest_id in item['DESTINATION']:
+                await client.send_message(dest_id, msg_text, file=event.message.media)
+
 
 
 if __name__ == '__main__':
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.close()
+
+    asyncio.run(main())
+
