@@ -66,10 +66,6 @@ def get_dialog(peer_entity: Union[PeerChannel, PeerChat, PeerUser]):
 
 @client.on(events.NewMessage)
 async def handler(event):
-    print(event)
-
-
-    return
     sender_ids = {entity.id for entity_id, entity in event._entities.items()}
 
     for item in forwarding_schema:
