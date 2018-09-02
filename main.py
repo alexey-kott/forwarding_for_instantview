@@ -84,8 +84,10 @@ async def handler(event):
                                         translate_schema=item.get('TRANSLATE'))
 
             for dest_id in item['DESTINATION']:
-                await client.send_message(dest_id, msg_text)
-                # await client.send_message(dest_id, msg_text, file=event.message.media)
+                try:
+                    await client.send_message(dest_id, msg_text, file=event.message.media)
+                except Exception as e:
+                    await client.send_message(dest_id, msg_text)
 
 
 async def main() -> None:
