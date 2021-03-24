@@ -6,6 +6,6 @@ idna==2.7
 pyaes==1.6.1
 pyasn1==0.4.2
 requests==2.19.1
-rsa==3.4.2
+rsa==4.1
 Telethon==0.19.1.6
 urllib3==1.23
